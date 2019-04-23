@@ -5,16 +5,19 @@ const scale = 32;
 const speed = 100;
 const rows = canvas.height / scale;
 const columns = canvas.width / scale;
+const fruitsnd = new Audio("sfx/fruitsfx.wav");
+const hurtsnd = new Audio("sfx/hurtsfx.wav");
 
 var score = 0;
 var hiScore = 0;
 var snake;
 var fruit;
 
+//Run this on startup
 (function setup() {
   snake = new Snake();
   fruit = new Fruit();
-  fruit.pickLocation();
+  fruitPickLocation();
 
   window.setInterval(() => {
     //Die!
@@ -23,12 +26,14 @@ var fruit;
         hiScore = score;
       }
       score = 0;
+      hurtsnd.play();
     }
 
     //Get Eating
     if(snake.eat(fruit)) {
-      fruit.pickLocation();
+      fruitPickLocation();
       score++;
+      fruitsnd.play();
     }
 
     //Draw all the important stuff
@@ -45,7 +50,24 @@ var fruit;
   }, speed);
 }());
 
-window.addEventListener('keydown', ((evt) => {
+//Get Input
+window.addEventListener('keyup', ((evt) => {
+  //Set Direction
   const direction = evt.key.replace('Arrow', '');
   snake.changeDirection(direction);
 }));
+
+//Get a random location for the fruit object
+function fruitPickLocation(){
+  //Pick Random Location
+  fruit.pickLocation();
+
+  //Check If Location Is In Tail
+  for(let i=0; i<snake.tail.length-1;i++){
+    if(snake.tail[i].x == fruit.x && snake.tail[i].y == fruit.y){
+      //Run the function again and break the for loop
+      fruitPickLocation();
+      break;
+    }
+  }
+}
